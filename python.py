@@ -6,7 +6,6 @@ from discord import app_commands
 from dataclasses import dataclass, asdict
 from dotenv import load_dotenv
 
-import os
 DATA_PATH = os.getenv("LADDER_DATA_PATH", "ladder_data.json")
 
 @dataclass
