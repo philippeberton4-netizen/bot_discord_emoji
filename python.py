@@ -1,10 +1,30 @@
 import os
 import json
 import discord
+import redis
 from discord.ext import commands
 from discord import app_commands
 from dataclasses import dataclass, asdict
 from dotenv import load_dotenv
+
+
+# Connexion à Redis via Railway
+redis_client = redis.from_url(os.getenv("REDIS_URL"))
+
+# ---------- Storage helpers (Redis) ----------
+def save_data(data: dict):
+    """Sauvegarde la config dans Redis."""
+    if not redis_client:
+        raise RuntimeError("REDIS_URL manquant ou connexion Redis indisponible")
+    redis_client.set("ladder_data", json.dumps(data))
+
+def load_data() -> dict | None:
+    """Charge la config depuis Redis (ou None si absent)."""
+    if not redis_client:
+        return None
+    raw = redis_client.get("ladder_data")
+    return json.loads(raw) if raw else None
+# --------------------------------------------
 
 DATA_PATH = os.getenv("LADDER_DATA_PATH", "ladder_data.json")
 
@@ -21,14 +41,26 @@ class LadderConfig:
 
     @staticmethod
     def load():
+        # 1) Essaye d'abord Redis
+        data = load_data()
+        if data:
+            return LadderConfig(**data)
+
+        # 2) Migration douce depuis un ancien fichier JSON s'il existe
         if os.path.exists(DATA_PATH):
             with open(DATA_PATH, "r", encoding="utf-8") as f:
-                return LadderConfig(**json.load(f))
+                data = json.load(f)
+            # on pousse dans Redis pour les prochains runs
+            save_data(data)
+            return LadderConfig(**data)
+
+        # 3) Sinon config par défaut
         return LadderConfig()
 
     def save(self):
-        with open(DATA_PATH, "w", encoding="utf-8") as f:
-            json.dump(asdict(self), f, ensure_ascii=False, indent=2)
+        # Sauvegarde uniquement dans Redis (persistance Railway)
+        save_data(asdict(self))
+
 
 
 config = LadderConfig.load()
