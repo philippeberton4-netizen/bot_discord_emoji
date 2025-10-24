@@ -8,18 +8,17 @@ from dataclasses import dataclass, asdict
 from dotenv import load_dotenv
 
 
-# Connexion à Redis via Railway
-redis_client = redis.from_url(os.getenv("REDIS_URL"))
+# Connexion Redis (ok local & Railway)
+redis_url = os.getenv("REDIS_URL")
+redis_client = redis.from_url(redis_url, decode_responses=True) if redis_url else None
 
 # ---------- Storage helpers (Redis) ----------
 def save_data(data: dict):
-    """Sauvegarde la config dans Redis."""
     if not redis_client:
         raise RuntimeError("REDIS_URL manquant ou connexion Redis indisponible")
     redis_client.set("ladder_data", json.dumps(data))
 
 def load_data() -> dict | None:
-    """Charge la config depuis Redis (ou None si absent)."""
     if not redis_client:
         return None
     raw = redis_client.get("ladder_data")
