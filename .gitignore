@@ -1,31 +1,5 @@
-# --- Fichiers secrets ---
-.env
-ladder_data.json
-
-# --- Fichiers système ---
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-*.db
-*.sqlite3
-
-# --- Environnements virtuels ---
+.env
 venv/
-.env/
-.venv/
-ENV/
-env.bak/
-venv.bak/
-
-# --- Fichiers IDE ---
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# --- Logs ---
-*.log
-
-# --- Autres fichiers temporaires ---
-.DS_Store
+ladder_data.json
