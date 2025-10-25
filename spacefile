@@ -1,2 +1,0 @@
-app_name: bot_discord_emoji
-entrypoint: python3 python.py
